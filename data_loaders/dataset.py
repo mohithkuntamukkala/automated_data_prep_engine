@@ -5,6 +5,8 @@ from pathlib import Path
 import uuid
 import pandas as pd
 import shutil
+from features.base import Feature
+from typing import List
 
 logger = logging.getLogger(__name__)
 
@@ -55,5 +57,20 @@ class CSVDataset(Dataset):
         super().__init__()
         self.separator = separator
         self.encoding = encoding
+        self.features : List[Feature] = []
+        self.n_features = 0
+        self.n_samples = 0
+        self.total_cells = 0
+        self.n_duplicate_samples = 0
+        self.duplicate_sample_percentage = 0.0
+        self.n_missing_cells = 0
+        self.missing_cell_percentage = 0
     def load_data(self,path):
-        return pd.read_csv(path,sep = self.separator, encoding = self.encoding)
+        df = pd.read_csv(path,sep = self.separator, encoding = self.encoding)
+        self.n_features,self.n_samples = df.shape[1],df.shape[0]
+        self.total_cells = self.n_samples*self.n_features
+        self.n_duplicate_samples = df.duplicated().sum()
+        self.duplicate_sample_percentage = (self.n_duplicate_samples/self.n_samples)*100
+        self.n_missing_cells = df.isna().sum().sum()
+        self.missing_cell_percentage = (self.n_missing_cells/self.total_cells)*100
+        return df
