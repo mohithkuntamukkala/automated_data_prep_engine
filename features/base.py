@@ -22,8 +22,10 @@ class Feature():
         obj.is_binary = True if obj.unique_count == 2 else False
         if obj.unique_count > 50 and obj.unique_count/obj.value_count > 0.05:
             obj.cardinality = 'High'
-        if obj.unique_count < 20:
+        elif obj.unique_count < 20:
             obj.cardinality = 'Low'
+        else:
+            obj.cardinality = 'Medium'
         return obj
     
         
