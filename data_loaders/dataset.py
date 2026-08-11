@@ -68,6 +68,7 @@ class CSVDataset(Dataset):
         self.n_missing_cells = 0
         self.missing_cell_percentage = 0
         self.feature_type_to_column = None
+        self.column_to_feature = {}
     def load_data(self,path):
         df = pd.read_csv(path,sep = self.separator, encoding = self.encoding)
         self.n_features,self.n_samples = df.shape[1],df.shape[0]
@@ -80,7 +81,9 @@ class CSVDataset(Dataset):
         for class_ in FEATURE_CLASSES:
             class_list = self.feature_type_to_column[class_]
             for column_name in class_list:
-                self.features.append(load_feature(class_,df,column_name))
+                feature = load_feature(class_,df,column_name)
+                self.features.append(feature)
+                self.column_to_feature[column_name] = feature
         return df
     
 def load_feature(class_type,df,column_name):

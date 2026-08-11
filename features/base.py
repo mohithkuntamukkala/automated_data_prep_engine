@@ -29,3 +29,6 @@ class Feature():
         return obj
     
         
+class FeatureRelationship():
+    def __init__(self):
+        self.column_names = [None,None]
