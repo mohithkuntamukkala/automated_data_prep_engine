@@ -6,4 +6,6 @@ Use of LLM will be kept very minimal, sticking to only their strengths like plan
 
 Need to plan Parquet, JSON, Image/Audio/Video based datasets support
 
+Need to make heuristics editable by user
+
 Estimated -> End of August
