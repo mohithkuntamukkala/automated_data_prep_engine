@@ -22,7 +22,7 @@ def classify_feature(series: pd.Series):
         unique_ratio = n_unique / len(series)
         if n_unique <= 2:
             return "Boolean"
-        elif n_unique <= 20 and unique_ratio <= 0.05:
+        elif n_unique <= 10 and unique_ratio <= 0.05:
             return "Categorical"
         else:
             return "Numerical"
