@@ -7,6 +7,8 @@ import pandas as pd
 import shutil
 from features.base import Feature
 from typing import List
+from features.utils import classify_features_from_df,FEATURE_CLASSES
+from features.features import NumericalFeature,CategoricalFeature,TextFeature,DateTimeFeature,BooleanFeature 
 
 logger = logging.getLogger(__name__)
 
@@ -65,6 +67,7 @@ class CSVDataset(Dataset):
         self.duplicate_sample_percentage = 0.0
         self.n_missing_cells = 0
         self.missing_cell_percentage = 0
+        self.feature_type_to_column = None
     def load_data(self,path):
         df = pd.read_csv(path,sep = self.separator, encoding = self.encoding)
         self.n_features,self.n_samples = df.shape[1],df.shape[0]
@@ -73,4 +76,21 @@ class CSVDataset(Dataset):
         self.duplicate_sample_percentage = (self.n_duplicate_samples/self.n_samples)*100
         self.n_missing_cells = df.isna().sum().sum()
         self.missing_cell_percentage = (self.n_missing_cells/self.total_cells)*100
+        self.feature_type_to_column = classify_features_from_df(df)
+        for class_ in FEATURE_CLASSES:
+            class_list = self.feature_type_to_column[class_]
+            for column_name in class_list:
+                self.features.append(load_feature(class_,df,column_name))
         return df
+    
+def load_feature(class_type,df,column_name):
+    if class_type == 'Numerical':
+        return NumericalFeature.from_series(df,column_name)
+    if class_type == 'Categorical':
+        return CategoricalFeature.from_series(df,column_name)
+    if class_type == 'Boolean':
+        return BooleanFeature.from_series(df,column_name)
+    if class_type == 'Text':
+        return TextFeature.from_series(df,column_name)
+    if class_type == 'Datetime':
+        return DateTimeFeature.from_series(df,column_name)

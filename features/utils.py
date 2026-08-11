@@ -1,7 +1,7 @@
 import pandas as pd
 from collections import defaultdict
 
-CLASSES = [
+FEATURE_CLASSES = [
     'Numerical',
     'Categorical',
     'Boolean',
