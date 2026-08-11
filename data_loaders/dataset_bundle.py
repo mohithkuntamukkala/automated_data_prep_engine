@@ -1,4 +1,4 @@
-from dataset import Dataset
+from data_loaders.dataset import Dataset
 from typing import List
 
 class DatasetBundle():
