@@ -5,10 +5,11 @@ from pathlib import Path
 import uuid
 import pandas as pd
 import shutil
-from features.base import Feature
+from features.base import Feature,FeatureRelationship
 from typing import List
 from features.utils import classify_features_from_df,FEATURE_CLASSES
 from features.features import NumericalFeature,CategoricalFeature,TextFeature,DateTimeFeature,BooleanFeature 
+from features.relationships import create_feature_relations
 
 logger = logging.getLogger(__name__)
 
@@ -69,6 +70,8 @@ class CSVDataset(Dataset):
         self.missing_cell_percentage = 0
         self.feature_type_to_column = None
         self.column_to_feature = {}
+        self.column_to_type = {}
+        self.feature_relations : List[FeatureRelationship] = []
     def load_data(self,path):
         df = pd.read_csv(path,sep = self.separator, encoding = self.encoding)
         self.n_features,self.n_samples = df.shape[1],df.shape[0]
@@ -84,6 +87,8 @@ class CSVDataset(Dataset):
                 feature = load_feature(class_,df,column_name)
                 self.features.append(feature)
                 self.column_to_feature[column_name] = feature
+                self.column_to_type[column_name] = class_
+        self.feature_relations = create_feature_relations(df,self.column_to_type)
         return df
     
 def load_feature(class_type,df,column_name):
