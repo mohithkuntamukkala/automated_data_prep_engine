@@ -4,3 +4,5 @@ temp/
 venv/
 test.ipynb
 test.*
+*.csv
+*.ipynb

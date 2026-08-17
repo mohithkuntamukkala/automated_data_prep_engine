@@ -19,13 +19,15 @@ class Dataset():
         self.source_path = None
         self.source_file = None
         self.working_path = None
+        self.dataset_bundle_id = ''
         self.dataset_id = f'file-{uuid.uuid4().hex}'
     @classmethod
-    def from_path(cls,path):
+    def from_path(cls,path,dataset_bundle_id):
         obj = cls()
+        obj.dataset_bundle_id = dataset_bundle_id
         obj.source_path = Path(path)
         try:
-            obj.working_path = Path('temp') / obj.dataset_id / obj.source_path.name
+            obj.working_path = Path('temp') / obj.dataset_bundle_id / obj.dataset_id / obj.source_path.name
             obj.working_path.parent.mkdir(parents=True,exist_ok=True)
             obj.save_file_from_local(obj.source_path,obj.working_path)
             obj.data = obj.load_data(obj.working_path)
@@ -34,11 +36,12 @@ class Dataset():
             logger.exception(f'Failed to load file from {obj.source_path}')
             raise
     @classmethod
-    def from_streamlit_file_upload(cls,file):
+    def from_streamlit_file_upload(cls,file,dataset_bundle_id):
         obj = cls()
         obj.source_file = file
+        obj.dataset_bundle_id = dataset_bundle_id
         try:
-            obj.working_path = Path('temp') / obj.dataset_id / obj.source_file.name
+            obj.working_path = Path('temp') / obj.dataset_bundle_id / obj.dataset_id / obj.source_file.name
             obj.working_path.parent.mkdir(parents=True,exist_ok=True)
             obj.save_uploaded_file(obj.source_file,obj.working_path)
             obj.data = obj.load_data(obj.working_path)
@@ -67,6 +70,7 @@ class CSVDataset(Dataset):
         self.n_duplicate_samples = 0
         self.duplicate_sample_percentage = 0.0
         self.n_missing_cells = 0
+        
         self.missing_cell_percentage = 0
         self.feature_type_to_column = None
         self.column_to_feature = {}
@@ -77,9 +81,11 @@ class CSVDataset(Dataset):
         self.n_features,self.n_samples = df.shape[1],df.shape[0]
         self.total_cells = self.n_samples*self.n_features
         self.n_duplicate_samples = df.duplicated().sum()
-        self.duplicate_sample_percentage = (self.n_duplicate_samples/self.n_samples)*100
+        self.duplicate_sample_percentage = (self.n_duplicate_samples / self.n_samples * 100 if self.n_samples else 0.0)
+        #self.duplicate_sample_percentage = (self.n_duplicate_samples/self.n_samples)*100
         self.n_missing_cells = df.isna().sum().sum()
-        self.missing_cell_percentage = (self.n_missing_cells/self.total_cells)*100
+        self.missing_cell_percentage = (self.n_missing_cells / self.total_cells * 100 if self.total_cells else 0.0)
+        #self.missing_cell_percentage = (self.n_missing_cells/self.total_cells)*100
         self.feature_type_to_column = classify_features_from_df(df)
         for class_ in FEATURE_CLASSES:
             class_list = self.feature_type_to_column[class_]
